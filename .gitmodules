@@ -1,0 +1,6 @@
+[submodule "deps/rocksdb/rocksdb"]
+	path = deps/rocksdb/rocksdb
+	url = https://github.com/facebook/rocksdb.git
+[submodule "deps/easyloggingpp/easyloggingpp"]
+	path = deps/easyloggingpp/easyloggingpp
+	url = https://github.com/zuhd-org/easyloggingpp.git
