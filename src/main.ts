@@ -1,6 +1,12 @@
 export * from './binding';
 
-import binding from './binding';
+import path from 'path';
+import builder from 'node-gyp-build';
+
+import { Unique, DatabaseContext, ReadOptionsContext, RocksBinding } from './binding';
+
+export const bindings: RocksBinding = builder(path.resolve(path.join(__dirname, '..')));
+
 
 // import {
 //     DbContext,
@@ -23,8 +29,6 @@ import binding from './binding';
 //         }
 //     };
 // }
-
-export const bindings = binding;
 
 // export class RocksDB {
 //     private readonly ctx: DbContext;
@@ -125,3 +129,23 @@ export const bindings = binding;
 //         return new Promise<any>((resolve, reject) => binding.batch_write(this.ctx, options || {}, promisify(resolve, reject)));
 //     }
 // }
+
+
+
+
+// const list = rockdbIteratorSample(db, rOpts);
+
+// for (const x of list) {
+//     console.log(x[0].toString(), x[1].toString());
+// }
+
+export function* rockdbIteratorSample(db: Unique<DatabaseContext>, rOpts: Unique<ReadOptionsContext>) {
+    const i = bindings.rocksdb_iterator_init(db, rOpts);
+
+    let hasValues = bindings.rocksdb_iterator_seek_for_first(i);
+
+    while (hasValues) {
+        yield [bindings.rocksdb_iterator_key(i), bindings.rocksdb_iterator_value(i)];
+        hasValues = bindings.rocksdb_iterator_next(i);
+    }
+}

@@ -6,6 +6,7 @@
   "main": "dist/main.js",
   "scripts": {
     "install": "node-gyp -j 16 rebuild",
+    "postinstall": "tsc",
     "install-old": "node-gyp-build",
     "test": "standard && hallmark && (nyc -s tape test/*-test.js | faucet) && nyc report",
     "test-gc": "npx -n=--expose-gc tape test/{cleanup,iterator-gc,chained-batch-gc}*-test.js",
