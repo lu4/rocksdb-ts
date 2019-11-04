@@ -1,3 +1,4 @@
 declare module 'node-gyp-build' {
-    export default function(path: string): any;
+    import { RocksBinding } from "src/binding";
+    export default function(path: string): RocksBinding;
 }

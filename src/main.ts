@@ -3,9 +3,9 @@ export * from './binding';
 import path from 'path';
 import builder from 'node-gyp-build';
 
-import { Unique, DatabaseContext, ReadOptionsContext, RocksBinding } from './binding';
+import { Unique, DatabaseContext, ReadOptionsContext } from './binding';
 
-export const bindings: RocksBinding = builder(path.resolve(path.join(__dirname, '..')));
+export const bindings = builder(path.resolve(path.join(__dirname, '..')));
 
 
 // import {
