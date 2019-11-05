@@ -1,6 +1,3 @@
-import path from 'path';
-import builder from 'node-gyp-build';
-
 export type Callback = (error: Error) => void;
 export type CallbackWithValue<V> = (error: Error, value: V) => void;
 export type CallbackWithKeyValue<K, V> = (error: Error, key: K, value: V) => void;
@@ -124,7 +121,7 @@ export interface RocksBinding {
     rocksdb_batch_delete(batch: Unique<BatchContext>, key: Buffer): void;
     rocksdb_batch_delete_utf8(batch: Unique<BatchContext>, key: string): void;
     rocksdb_batch_delete_latin1(batch: Unique<BatchContext>, key: string): void;
-    
+
     rocksdb_batch_clear(batch: Unique<BatchContext>): void;
     rocksdb_batch_write(database: Unique<DatabaseContext>, batch: Unique<BatchContext>, options: Unique<WriteOptionsContext>): void;
     rocksdb_batch_write_async(database: Unique<DatabaseContext>, batch: Unique<BatchContext>, options: Unique<WriteOptionsContext>): Promise<void>;
@@ -177,5 +174,3 @@ export interface RocksBinding {
     logger_start(): void;
     logger_stop(): void;
 }
-
-export default builder(path.resolve(path.join(__dirname, '..'))) as RocksBinding;
