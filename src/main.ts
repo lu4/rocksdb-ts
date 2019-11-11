@@ -1,3 +1,10 @@
+import { bindings, OptionsContext, Unique, ReadOptionsContext, DatabaseContext, IteratorContext } from "rocksdb";
+
+const dbOptionsStr = [
+    "create_if_missing=true"
+].join(";")
+
+
 export * from './binding';
 
 import path from 'path';
@@ -8,144 +15,80 @@ import { Unique, DatabaseContext, ReadOptionsContext } from './binding';
 export const bindings = builder(path.resolve(path.join(__dirname, '..')));
 
 
-// import {
-//     DbContext,
-//     BatchContext,
-//     DelOptions,
-//     GetOptions,
-//     OpenOptions,
-//     StringOrBuffer,
-//     IteratorOptions,
-//     BatchedOperation,
-//     IteratorContext,
-// } from './binding';
+const getEntry = (i: Unique<IteratorContext>): any => [bindings.rocksdb_iterator_key(i), bindings.rocksdb_iterator_value(i)];
+const getKey = (i: Unique<IteratorContext>) => bindings.rocksdb_iterator_key(i);
+const getValue = (i: Unique<IteratorContext>) => bindings.rocksdb_iterator_value(i);
 
-// function promisify<T>(resolve: (value?: T) => void, reject: (error: any) => void): (error?: Error, value?: T) => void {
-//     return (error?: Error, value?: T) => {
-//         if (error) {
-//             reject(error);
-//         } else {
-//             resolve(value);
-//         }
-//     };
-// }
-
-// export class RocksDB {
-//     private readonly ctx: DbContext;
-
-//     public constructor(public readonly location: string) {
-//         this.ctx = binding.db_init();
-//     }
-
-//     public open(options?: OpenOptions) {
-//         return new Promise<void>((resolve, reject) => binding.db_open(this.ctx, this.location, options || {}, promisify(resolve, reject)));
-//     }
-
-//     public approximateSize(start: StringOrBuffer, end: StringOrBuffer) {
-//         return new Promise<number>((resolve, reject) => binding.db_approximate_size(this.ctx, start, end, promisify(resolve, reject)));
-//     }
-
-//     public async batchOperations(batch: BatchedOperation[], options?: { sync?: boolean; }): Promise<void> {
-//         return new Promise<void>(
-//             (resolve, reject) => binding.batch_do(this.ctx, batch, options || {}, promisify(resolve, reject))
-//         );
-//     }
-
-//     public async batch(): Promise<Batch> {
-//         return new Batch(binding.batch_init(this.ctx));
-//     }
-
-//     public close() {
-//         return new Promise<void>((resolve, reject) => binding.db_close(this.ctx, promisify(resolve, reject)));
-//     }
-
-//     public compactRange(start: StringOrBuffer, end: StringOrBuffer) {
-//         return new Promise<void>((resolve, reject) => binding.db_compact_range(this.ctx, start, end, promisify(resolve, reject)));
-//     }
-
-//     public del(key: StringOrBuffer, options?: DelOptions) {
-//         return new Promise<void>((resolve, reject) => binding.db_del(this.ctx, key, options || {}, promisify(resolve, reject)));
-//     }
-
-//     public destroy(location: string) {
-//         return new Promise<void>((resolve, reject) => binding.destroy_db(location, promisify(resolve, reject)));
-//     }
-
-//     public get(key: StringOrBuffer, options?: GetOptions) {
-//         return new Promise<Buffer>((resolve, reject) => binding.db_get(this.ctx, key, options || {}, promisify(resolve, reject) as any));
-//     }
-
-//     public getProperty(property: string) {
-//         return binding.db_get_property(this.ctx, property);
-//     }
-
-//     public iterator(options?: IteratorOptions) {
-//         if (options) {
-//             return new Iterator(this, binding.iterator(options));
-//         } else {
-//             return new Iterator(this, this.ctx.iterator());
-//         }
-//     }
-//     public put(key: StringOrBuffer, value: StringOrBuffer) {
-//         return new Promise<void>((resolve, reject) => this.ctx.put(key, value, promisify(resolve, reject)));
-//     }
-//     public repair(location: string) {
-//         return new Promise<void>((resolve, reject) => this.ctx.repair(location, promisify(resolve, reject)));
-//     }
-// }
-
-
-// // tslint:disable-next-line: max-classes-per-file
-// export class Iterator {
-//     public constructor(private ctx: IteratorContext) {
-//     }
-// }
-
-// // tslint:disable-next-line: max-classes-per-file
-// export class Batch {
-//     public constructor(private ctx: BatchContext) {
-
-//     }
-
-//     public put(key: StringOrBuffer, value: StringOrBuffer): this {
-//         binding.batch_put(this.ctx, key, value);
-
-//         return this;
-//     }
-
-//     public del(key: StringOrBuffer): this {
-//         binding.batch_del(this.ctx, key);
-
-//         return this;
-//     }
-
-//     public clear(): this {
-//         binding.batch_clear(this.ctx);
-
-//         return this;
-//     }
-
-//     public write(options?: { sync?: boolean }): Promise<any> {
-//         return new Promise<any>((resolve, reject) => binding.batch_write(this.ctx, options || {}, promisify(resolve, reject)));
-//     }
-// }
-
-
-
-
-// const list = rockdbIteratorSample(db, rOpts);
-
-// for (const x of list) {
-//     console.log(x[0].toString(), x[1].toString());
-// }
-
-export function* rockdbIteratorSample(db: Unique<DatabaseContext>, rOpts: Unique<ReadOptionsContext>) {
+function* rockdbIteratorSample(db: Unique<DatabaseContext>, rOpts: Unique<ReadOptionsContext>, startKey: any, getDataFn = getEntry) {
     const i = bindings.rocksdb_iterator_init(db, rOpts);
 
-    let hasValues = bindings.rocksdb_iterator_seek_for_first(i);
+    let hasValues = startKey ? bindings.rocksdb_iterator_seek(i, startKey) : bindings.rocksdb_iterator_seek_for_first(i);
 
     while (hasValues) {
-        yield [bindings.rocksdb_iterator_key(i), bindings.rocksdb_iterator_value(i)];
-        hasValues = bindings.rocksdb_iterator_next(i);
+        const nextKey = yield getDataFn(i);
+        hasValues = nextKey ? bindings.rocksdb_iterator_seek(i, nextKey) : bindings.rocksdb_iterator_next(i);
     }
+}
+
+export class RocksDbMapSample<K, V> implements Map<K, V> {
+    public rocksdbOpts: any = null;
+    public db: any = null;
+
+    constructor (public location: string, public options: string) {
+        this.rocksdbOpts = bindings.rocksdb_options_init_from_buffer(Buffer.from(options));
+        this.db = bindings.rocksdb_open(Buffer.from(location, "utf-8"), this.rocksdbOpts);
+    }
+
+    public [Symbol.toStringTag] = "RocksDbMap";
+
+    public [Symbol.iterator](): IterableIterator<[K, V]> {
+        return [][Symbol.iterator]();
+    }
+
+    public entries(rOpts?: Unique<ReadOptionsContext>): IterableIterator<[K, V]>
+    public entries(rOpts?: Unique<ReadOptionsContext>, startKey?: any): IterableIterator<[K, V]> {
+        return rockdbIteratorSample(this.db, rOpts || bindings.rocksdb_read_options_init(), startKey, getEntry);
+    }
+
+    public keys(): IterableIterator<K> {
+        return [][Symbol.iterator]();
+    }
+
+    public values(): IterableIterator<V> {
+        return [][Symbol.iterator]();
+    }
+
+    public clear(): void {
+        return void 0;
+    }
+
+    public delete(key: K): boolean {
+        return true;
+    }
+
+    public forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void {
+        return void 0;
+    }
+
+    public get(key: K): V | undefined {
+        return undefined;
+    }
+
+    public has(key: K): boolean {
+        return true;
+    }
+
+    public set(key: K, value: V): this {
+        return this;
+    }
+
+    public readonly size: number = 0;
+}
+
+
+
+const v = new RocksDbMapSample("./source-index.db", dbOptionsStr);
+
+for (const x of v.entries()) {
+    console.log((x as any)[0].toString(), (x as any)[1].toString());
 }
