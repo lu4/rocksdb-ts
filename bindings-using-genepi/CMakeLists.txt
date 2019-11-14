@@ -20,12 +20,18 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(genepi_template)
+project(rocks_db)
 
 find_package(genepi REQUIRED PATHS ${PROJECT_SOURCE_DIR}/node_modules/@geode/genepi/build)
 
-add_genepi_library(genepi_template 
-    "${PROJECT_SOURCE_DIR}/src/genepi_template/common.cpp"
-    "${PROJECT_SOURCE_DIR}/src/genepi_template/functions.cpp"
-    "${PROJECT_SOURCE_DIR}/src/genepi_template/objects.cpp"
+include_directories(../deps/rocksdb/rocksdb/include)
+link_directories(/usr/local/Cellar/rocksdb/6.4.6/lib)
+
+add_genepi_library(rocks_db
+    "${PROJECT_SOURCE_DIR}/src/rocks_db/common.cpp"
+    "${PROJECT_SOURCE_DIR}/src/rocks_db/functions.cpp"
+    "${PROJECT_SOURCE_DIR}/src/rocks_db/objects.cpp"
 )
+
+target_link_libraries(rocks_db PRIVATE rocksdb)
+
