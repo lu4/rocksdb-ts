@@ -26,7 +26,7 @@
             }], ["OS == 'mac'", {
                 'xcode_settings': {
                     'WARNING_CFLAGS': [
-                        '-Wno-sign-compare', '-Wno-unused-variable', '-Wno-unused-function', '-Wno-ignored-qualifiers'
+                        '-Wno-sign-compare', '-Wno-unused-variable', '-Wno-unused-function', '-Wno-ignored-qualifiers', '-Wno-c++14-extensions', '-Wno-c++17-extensions'
                     ],
                     'OTHER_CPLUSPLUSFLAGS': [
                         '-mmacosx-version-min=10.8',
@@ -47,7 +47,8 @@
             "<(module_root_dir)/deps/easyloggingpp/easyloggingpp.gyp:easyloggingpp",
             "<(module_root_dir)/deps/rocksdb/rocksdb.gyp:rocksdb"
         ], "include_dirs": [
-            "<!(node -e \"require('napi-macros')\")"
+            "<!(node -e \"require('napi-macros')\")",
+            "<(module_root_dir)/deps/emscripten/system/include",
         ], "sources": [
             "binding.cc"
         ]
