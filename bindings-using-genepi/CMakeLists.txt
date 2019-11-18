@@ -24,7 +24,7 @@ project(rocks_db)
 
 find_package(genepi REQUIRED PATHS ${PROJECT_SOURCE_DIR}/node_modules/@geode/genepi/build)
 
-include_directories(../deps/rocksdb/rocksdb/include)
+include_directories(/usr/local/include ../deps/rocksdb/rocksdb/include)
 link_directories(/usr/local/Cellar/rocksdb/6.4.6/lib)
 
 add_genepi_library(rocks_db

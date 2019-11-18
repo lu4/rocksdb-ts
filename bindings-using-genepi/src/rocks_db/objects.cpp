@@ -14,21 +14,20 @@
 using namespace rocksdb;
 
 class Rocksdb {
-    private:
-        DB* db;
-    public:
-        Rocksdb() {}
-        Status Open(std::string options, const std::string& name) {
-            Options opt;
-            std::string options_string =
-                "create_if_missing=true;max_open_files=1000;"
-                "block_based_table_factory={block_size=4096}";
-
-            GetDBOptionsFromString(opt, options_string, &opt);
-
-            return DB::Open(opt, name, &this->db);
+  private:
+    DB* db;
+  public:
+    Rocksdb() {}
+    Status Open(const Options& options, const std::string& name) {
+        try {
+            return DB::Open(options, name, &this->db);
+        } catch(const std::exception& e) {
+            std::cout << "Error: " << e.what();
         }
-    ~Rocksdb() {}
+    }
+    ~Rocksdb() {
+        delete this->db;
+    }
 };
 
 #include <genepi/genepi.h>
