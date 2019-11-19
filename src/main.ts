@@ -1,19 +1,15 @@
-import { bindings, OptionsContext, Unique, ReadOptionsContext, DatabaseContext, IteratorContext } from "rocksdb";
+// import { bindings, OptionsContext, Unique, ReadOptionsContext, DatabaseContext, IteratorContext } from "rocksdb";
+
+import { Unique, ReadOptionsContext, DatabaseContext, IteratorContext } from "./binding";
+
+import path from 'path';
+import builder from 'node-gyp-build';
+export const bindings = builder(path.resolve(path.join(__dirname, '..')));
+
 
 const dbOptionsStr = [
     "create_if_missing=true"
 ].join(";")
-
-
-export * from './binding';
-
-import path from 'path';
-import builder from 'node-gyp-build';
-
-import { Unique, DatabaseContext, ReadOptionsContext } from './binding';
-
-export const bindings = builder(path.resolve(path.join(__dirname, '..')));
-
 
 const getEntry = (i: Unique<IteratorContext>): any => [bindings.rocksdb_iterator_key(i), bindings.rocksdb_iterator_value(i)];
 const getKey = (i: Unique<IteratorContext>) => bindings.rocksdb_iterator_key(i);
@@ -86,9 +82,11 @@ export class RocksDbMapSample<K, V> implements Map<K, V> {
 }
 
 
-
-const v = new RocksDbMapSample("./source-index.db", dbOptionsStr);
+const dbPath = path.join(process.env.HOME!, "source-index-test.db");
+const v = new RocksDbMapSample(dbPath, dbOptionsStr);
 
 for (const x of v.entries()) {
     console.log((x as any)[0].toString(), (x as any)[1].toString());
 }
+
+console.log("done");
