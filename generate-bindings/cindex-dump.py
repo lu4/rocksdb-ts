@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import json
 #===- cindex-dump.py - cindex/Python Source Dump -------------*- python -*--===#
 #
 #                     The LLVM Compiler Infrastructure
@@ -8,6 +8,10 @@
 # License. See LICENSE.TXT for details.
 #
 #===------------------------------------------------------------------------===#
+
+from clang.cindex import CursorKind
+
+#import CursorKind from clang.cindex.CursorKind
 
 """
 A simple command line tool for dumping a source file using the Clang Index
@@ -37,18 +41,33 @@ def get_cursor_id(cursor, cursor_list = []):
     return len(cursor_list) - 1
 
 def get_info(node, depth=0):
+    f_args=[]
+    f_result={}
+
     if opts.maxDepth is not None and depth >= opts.maxDepth:
         children = None
     else:
         children = [get_info(c, depth+1)
                     for c in node.get_children()]
-    return { 'id' : get_cursor_id(node),
-             'kind' : node.kind,
+
+    if node.kind == CursorKind.FUNCTION_DECL:
+        for func_arg in node.get_children():
+            f_args.append({
+                'displayname': func_arg.displayname,
+                'kind': func_arg.kind.__repr__(),
+                'type': func_arg.type.kind.__repr__(),
+                'spelling': func_arg.type.spelling
+            })
+        f_result = {
+            'kind' : node.result_type.kind.__repr__(),
+            'spelling': node.result_type.spelling
+        }
+    return { 'id' : get_cursor_id(node).__str__(),
+             'kind' : node.kind.__repr__(),
              'usr' : node.get_usr(),
-             'spelling' : node.spelling,
-             'location' : node.location,
-             'extent.start' : node.extent.start,
-             'extent.end' : node.extent.end,
+             'f_args' : f_args,
+             'f_result': f_result,
+             'spelling': node.spelling,
              'is_definition' : node.is_definition(),
              'definition id' : get_cursor_id(node.get_definition()),
              'children' : children }
@@ -79,8 +98,11 @@ def main():
     if not tu:
         parser.error("unable to load input")
 
-    pprint(('diags', map(get_diag_info, tu.diagnostics)))
-    pprint(('nodes', get_info(tu.cursor)))
+   # pprint(('diags', map(get_diag_info, tu.diagnostics)))
+
+    # print(get_info(tu.cursor));
+
+    print(json.dumps(get_info(tu.cursor)) )
 
 if __name__ == '__main__':
     main()
