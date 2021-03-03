@@ -1064,7 +1064,7 @@ Status DBImpl::SetDBOptions(
       env_options_for_compaction_ = env_->OptimizeForCompactionTableWrite(
           env_options_for_compaction_, immutable_db_options_);
       versions_->ChangeEnvOptions(mutable_db_options_);
-      //TODO(xiez): clarify why apply optimize for read to write options
+      // TODO(xiez): clarify why apply optimize for read to write options
       env_options_for_compaction_ = env_->OptimizeForCompactionTableRead(
           env_options_for_compaction_, immutable_db_options_);
       env_options_for_compaction_.compaction_readahead_size =
@@ -1441,7 +1441,7 @@ InternalIterator* DBImpl::NewInternalIterator(const ReadOptions& read_options,
     IterState* cleanup =
         new IterState(this, &mutex_, super_version,
                       read_options.background_purge_on_iterator_cleanup ||
-                      immutable_db_options_.avoid_unnecessary_blocking_io);
+                          immutable_db_options_.avoid_unnecessary_blocking_io);
     internal_iter->RegisterCleanup(CleanupIteratorState, cleanup, nullptr);
 
     return internal_iter;
@@ -1871,7 +1871,7 @@ void DBImpl::MultiGetImpl(
     for (KeyContext& key : key_context) {
 #ifndef NDEBUG
       if (index > 0 && sorted_input) {
-        KeyContext* lhs = &key_context[index-1];
+        KeyContext* lhs = &key_context[index - 1];
         KeyContext* rhs = &key_context[index];
         const Comparator* comparator = cfd->user_comparator();
         int cmp = comparator->Compare(*(lhs->key), *(rhs->key));
@@ -3558,7 +3558,7 @@ void DumpRocksDBBuildVersion(Logger* log) {
   // generate util/build_version.cc
   ROCKS_LOG_HEADER(log, "RocksDB version: %d.%d.%d\n", ROCKSDB_MAJOR,
                    ROCKSDB_MINOR, ROCKSDB_PATCH);
-  ROCKS_LOG_HEADER(log, "Git sha %s", rocksdb_build_git_sha);
+  // ROCKS_LOG_HEADER(log, "Git sha %s", rocksdb_build_git_sha);
   ROCKS_LOG_HEADER(log, "Compile date %s", rocksdb_build_compile_date);
 #else
   (void)log;  // ignore "-Wunused-parameter"
