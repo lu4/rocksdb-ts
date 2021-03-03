@@ -67,9 +67,9 @@
     "gypfile": true,
     "repository": {
         "type": "git",
-        "url": "https://github.com/Level/rocksdb.git"
+        "url": "https://github.com/lu4/rocksdb-ts.git"
     },
-    "homepage": "https://github.com/Level/rocksdb",
+    "homepage": "https://github.com/lu4/rocksdb-ts",
     "keywords": [
         "leveldb",
         "level"
