@@ -1,3 +1,6 @@
+import path from 'path';
+import builder from 'node-gyp-build';
+
 export type Callback = (error: Error) => void;
 export type CallbackWithValue<V> = (error: Error, value: V) => void;
 export type CallbackWithKeyValue<K, V> = (error: Error, key: K, value: V) => void;
@@ -174,3 +177,5 @@ export interface RocksBinding {
     logger_start(): void;
     logger_stop(): void;
 }
+
+export const lib = builder(path.resolve(path.join(__dirname, '..')));
